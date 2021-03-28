@@ -35,6 +35,8 @@ public class AnswerController {
     private AnswerBusinessService answerBusinessService;
 
 
+    /*This endpoint is a GET METHOD and is used to get the answer
+     and throws AuthorizationFailedException if the answer to a specific question doesn't exist */
 
     @RequestMapping(method = RequestMethod.GET, path = "answer/all/{questionId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<AnswerDetailsResponse>> getAllAnswerToQuestion(@PathVariable(value = "questionId") final String questionUuid, @RequestHeader(value = "authorization") final String authorization) throws AuthorizationFailedException, InvalidQuestionException {
@@ -50,6 +52,9 @@ public class AnswerController {
 
         return new ResponseEntity<List<AnswerDetailsResponse>>(answerDetailsResponsesList, HttpStatus.OK);
     }
+
+    /*This endpoint is a POST request and used to create an answer and throws an InvalidQuestionException, if the
+    access token provided by the user doesn't exist */
 
 
     @RequestMapping(method = RequestMethod.POST, path = "/question/{questionId}/answer/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -70,7 +75,9 @@ public class AnswerController {
 
     }
 
-
+    /*This endpoint is a PUT request and only the user who asked the question can answer it,
+    throws AuthorizationFailedException, if the access token provided by the user does not exist
+     */
 
     @RequestMapping(method = RequestMethod.PUT, path = "/answer/edit/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerEditResponse> editAnswerContent(final AnswerEditRequest answerEditRequest, @PathVariable(value = "answerId") final String answerId,
@@ -88,6 +95,11 @@ public class AnswerController {
 
         return new ResponseEntity<AnswerEditResponse>(answerEditResponse, HttpStatus.OK);
     }
+    /*This endpoint is a DELETE request and used to delete an answer, only the user who posted the answer can delete it
+    throws an AnswerNotFoundException, if the answer to be deleted doesn't exist and throws an AuthorizationFailedException
+    if the access token provided by the user doesn't exist in the database
+     */
+
     @RequestMapping(method = RequestMethod.DELETE, path = "/answer/delete/{answerId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerDeleteResponse> deleteAnswer(@PathVariable(value = "answerId") final String answerId,
                                                              @RequestHeader("authorization") final String authorization)throws

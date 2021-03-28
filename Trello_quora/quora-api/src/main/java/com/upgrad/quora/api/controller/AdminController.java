@@ -14,11 +14,14 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/")
-public class AdminController {
+public class AdminController<UserAdminBusinessService> {
 
     @Autowired
     private UserAdminBusinessService userAdminBusinessService;
 
+     /*This endpoint is a DELETE request used to delete a user throws AuthorizationFailedException if the user doesn't
+     exist
+      */
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/admin/user/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity < UserDeleteResponse > userDelete(@PathVariable("userId") final String userUuid, @RequestHeader("authorization") final String accessToken) throws AuthorizationFailedException, UserNotFoundException {

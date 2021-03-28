@@ -37,10 +37,13 @@ public class QuestionController {
             QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse().id(questionEntity.getUuid()).content(questionEntity.getContent());
             questionDetailsResponseList.add(questionDetailsResponse);
         }
-
         return new ResponseEntity<List<QuestionDetailsResponse>>(questionDetailsResponseList, HttpStatus.OK);
-
     }
+
+
+   /*This endpoint is a GET request and is used to fetch all the questions that have been posted in the application
+   it throws an AuthorizationFailedException if the access token provided by the user does not exist in the database*/
+
     @RequestMapping(method = RequestMethod.GET,path = "question/all/{userId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestionsByUser(@PathVariable(value = "userId")final String uuid,@RequestHeader(value = "authorization")final String authorization) throws UserNotFoundException, AuthorizationFailedException {
 
@@ -58,6 +61,10 @@ public class QuestionController {
 
     }
 
+
+    /*This endpoint is a PUT request and is used to edit a question posted by the user, it throws an AuthorizationFailedException if the
+    access token provided by the user does not exist in the database*/
+
     @RequestMapping(method = RequestMethod.POST, path="/question/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionResponse> createQuestion(final QuestionRequest questionRequest, @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException {
         QuestionEntity questionEntity = new QuestionEntity();
@@ -68,19 +75,36 @@ public class QuestionController {
         QuestionResponse questionResponse = new QuestionResponse().id(createdQuestion.getUuid()).status("QUESTION CREATED");
         return  new ResponseEntity<QuestionResponse>(questionResponse, HttpStatus.CREATED);
     }
-    @RequestMapping(method = RequestMethod.PUT, path = "/question/edit/{question_id}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionEditResponse> editQuesttion(final QuestionEditRequest questionEditRequest, @PathVariable(value = "question_id") final String questionId, @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, InvalidQuestionException {
-        QuestionEntity questionEntity = new QuestionEntity();
-        questionEntity.setContent(questionEditRequest.getContent());
-        questionEntity.setDate(ZonedDateTime.now());
-        QuestionEntity editedQuestion = questionBusinessService.editQuestion(questionEntity, questionId, authorization);
-        QuestionEditResponse questionEditResponse = new QuestionEditResponse().id(editedQuestion.getUuid()).status("QUESTION EDITED");
-        return new ResponseEntity<QuestionEditResponse>(questionEditResponse, HttpStatus.OK);
+    /*This endpoint is a GET request and is used to fetch all the questions posed by a user it
+    throws a UserNotFoundException if the user with UUID whose questions are to be retrieved from the database doesn't
+    exist.*/
+
+    @RequestMapping(method = RequestMethod.GET , path = "/question/all/{userId}" , produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestionsByUser(@PathVariable("userId") final String userId, @RequestHeader("authorization") final String authorization )
+            throws AuthorizationFailedException , UserNotFoundException {
+
+        final UserAuthEntity userAuthEntity = userAuthBusinessService.getUser(authorization);
+
+        final List<QuestionEntity> allQuestionByUser = questionBusinessService.getAllQuestionsByUser(userId , userAuthEntity);
+
+        return new ResponseEntity<List<QuestionDetailsResponse>>(questionslist(allQuestionByUser), HttpStatus.OK);
+
     }
-    @RequestMapping(method = RequestMethod.DELETE, path = "/question/delete/{questionId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionDeleteResponse> deleteQuestion(@PathVariable(value = "questionId") final String questionId, @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, InvalidQuestionException {
-        QuestionEntity deletedQuestion = questionBusinessService.deleteQuestion(questionId, authorization);
+
+    /*This endpoint is a DELETE request and is used to delete a question that has been posted by a user.*/
+
+    @RequestMapping(method = RequestMethod.DELETE , path = "/question/delete/{questionId}" ,  produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionDeleteResponse> deleteQuestion(@RequestHeader("authorization") final String authorization, @PathVariable("questionId") final String questionid )
+            throws AuthorizationFailedException , InvalidQuestionException {
+
+        final UserAuthEntity userAuthEntity = userAuthBusinessService.getUser(authorization);
+
+
+        QuestionEntity deletedQuestion = questionBusinessService.deleteQuestion(questionid, userAuthEntity);
         QuestionDeleteResponse questionDeleteResponse = new QuestionDeleteResponse().id(deletedQuestion.getUuid()).status("QUESTION DELETED");
+
         return new ResponseEntity<QuestionDeleteResponse>(questionDeleteResponse, HttpStatus.OK);
+
+    }
     }
 }
