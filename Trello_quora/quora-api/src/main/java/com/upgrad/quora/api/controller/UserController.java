@@ -85,6 +85,7 @@ public class UserController {
 
     }
 
+
     /*This endpoint is a POST method and is used to sign out from the Quora Application
     and throws SignOutRestrictedException, if access token provided by the user does not exist.*/
     @RequestMapping(method = RequestMethod.POST, path = "/user/signout", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
